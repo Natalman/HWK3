@@ -34,7 +34,7 @@ def main():
         customer = relationship("Customer", back_populates="consultant")
 
         def __repr__(self):
-            return 'consultant: ConsultantId = {} ConsultantName = {} Address = {} City = {} State = {} ZipCode{} Commission = {} Rate {}'.format(self.ConsultantId, self.ConsultantName, self.Address, self.City, self.State, self.ZipCode, self.Commission, self.Rate)
+            return 'Consultant: ConsultantId = {} ConsultantName = {} Address = {} City = {} State = {} ZipCode = {} Commission = {} Rate = {}'.format(self.ConsultantId, self.ConsultantName, self.Address, self.City, self.State, self.ZipCode, self.Commission, self.Rate)
 
 
     class Customer(Base): # Customer table class with relationship with the consutant
@@ -52,7 +52,7 @@ def main():
         order = relationship("Order", back_populates="customer")
 
         def __repr__(self):
-                return 'customer: CustomerId = {} CustomerName = {} Address = {} City = {} State = {} ZipCode{} Balance = {}, assigned to consultant = {}'.format(self.CustomerId, self.CustomerName, self.Address, self.City, self.State, self.ZipCode, self.Balance, self.ConsultantId, self.consultant)
+                return 'Customer: CustomerId = {} CustomerName = {} Address = {} City = {} State = {} ZipCode = {} Balance = {}, assigned to consultant = {}'.format(self.CustomerId, self.CustomerName, self.Address, self.City, self.State, self.ZipCode, self.Balance, self.ConsultantId, self.consultant)
 
 
     class Product (Base): # Product table
@@ -68,23 +68,25 @@ def main():
 
 
         def __repr__(self):
-            return 'product: ProductKey = {} ProdName = {} Description = {} Price = {} Quantity = {}'.format(self.ProductKey, self.ProdName, self.Description, self.Price, self.Quantity )
+            return 'Product: ProductKey = {} ProdName = {} Description = {} Price = {} Quantity = {}'.format(self.ProductKey, self.ProdName, self.Description, self.Price, self.Quantity )
+
 
 
     class Order (Base): # Order table with relationship with the customer and the Product table
         __tablename__ = 'order'
 
         OrderNum = Column (Integer, primary_key = True)
+        ProdName = Column (String)
+        Price = Column (Float)
+        Quantity = Column (Integer)
+        TotalPrice = Column (Float)
         CustomerNum = Column (Integer, ForeignKey('customer.CustomerId'))
         customer = relationship ("Customer", back_populates = 'order')
         ProductKey = Column (Integer, ForeignKey('product.ProductKey'))
         product = relationship ("Product", back_populates = 'order')
-        Price = Column (Float)
-        Quantity = Column (Integer)
-        TotalPrice = Column (Float)
 
         def __repr__(self):
-            return 'order: OrderNum = {} assigned to customer = {} assigned to product = {} Price = {} Quantity = {} TotalPrice = {}'.format(self.OrderNum, self.CustomerNum, self.customer, self.ProductKey, self.product, self.Price, self.Quantity, self.TotalPrice)
+            return 'Order: OrderNum = {} ProdName = {} Price = {} Quantity = {} TotalPrice = {}, assigned to customer = {}'.format(self.OrderNum, self.ProdName, self.Price, self.Quantity, self.TotalPrice, self.CustomerNum, self.customer)
 
 
     Base.metadata.create_all(engine)
@@ -111,10 +113,10 @@ def main():
     Product9 = Product(ProdName = 'MacBook Air', Description = 'Computer', Price = 750.00, Quantity = 5)
     Product10 = Product(ProdName = 'IPhone7', Description = 'Phone', Price = 800.00, Quantity = 10)
 
-    Order1 = Order (CustomerNum = 4, ProductKey = 2, Price = 350.00, Quantity = 1,TotalPrice = 350.00)
-    Order2 = Order (CustomerNum = 5, ProductKey = 7, Price =760.00, Quantity = 1,TotalPrice = 760.00)
-    Order3 = Order (CustomerNum = 2, ProductKey = 10, Price = 800.00, Quantity = 2,TotalPrice = 1600.00)
-    Order4 = Order (CustomerNum = 1, ProductKey = 5, Price = 399.00, Quantity = 1,TotalPrice = 399.00)
+    Order1 = Order ( Price = 350.00, ProdName = 'Xbox one S', Quantity = 1,TotalPrice = 350.00,CustomerNum = 4)
+    Order2 = Order ( Price =760.00, ProdName = 'htc vive', Quantity = 1,TotalPrice = 760.00, CustomerNum = 5)
+    Order3 = Order ( Price = 800.00, ProdName = 'IPhone7', Quantity = 2,TotalPrice = 1600.00, CustomerNum = 2)
+    Order4 = Order ( Price = 399.00, ProdName = 'Ipad mini', Quantity = 1,TotalPrice = 399.00, CustomerNum = 1)
 
     from sqlalchemy.orm import sessionmaker
 
@@ -174,8 +176,8 @@ def main():
         update_session = Session()
         view_session = Session()
 
-
 #''' Consultant block to add, view, edit, and delete Consultant'''
+
         if choice == '1':
             for table in search_Consl.query(Consultant):
                 print (table)
@@ -235,6 +237,11 @@ def main():
 
                 if choiceOpt == '9': # Going back to the main menu
                     break
+
+
+
+
+
 #''' Customer block to add, view, edit, and delete Customer'''
         if choice == '2':
             for table in search_Cust.query(Customer): #Printing table
@@ -298,6 +305,71 @@ def main():
                 if choiceOpt == '9': # back to the main menu
                     break
 
+
+
+
+#''' Product block to add, view, edit, and delete Product'''
+        if choice == '3':
+            for table in search_Product.query(Product): #Printing table
+                print (table)
+
+            loop2 = True
+            while loop2:
+                ProductMenu()
+                choiceOpt = input("Enter your choice: ")
+                if choiceOpt == '1':
+
+                    for table in search_Product.query(Product): #Printing table
+                        print (table)
+
+                if choiceOpt == '2': # Adding new Product
+                    ProductName = Name(); Desc = Description(); ProPrice = Price(); Qty = Quantity()
+                    NewProd = Product(ProdName = ProductName, Description = Desc, Price = ProdPrice, Quantity = Qty)
+                    add_session.add(NewProd)
+                    add_session.commit()
+                    print("New Product has been added")
+
+                if choiceOpt == '3': # View Product Info
+                    ProdID= Id()
+                    print(view_session.query(Product).filter_by(ProductKey = ProdID).one)
+
+                if choiceOpt == '4': # Updating Product name
+                    ProdID = Id(); NewProd = Name()
+                    for row in update_session.query(Product).filter_by(ProductKey = ProdID):
+                        row.ProdName = NewProd
+                        update_session.commit()
+
+                if choiceOpt == '5':# updating Description
+                    ProdID = Id(); NewDesc = Description()
+                    for row in update_session.query(Product).filter_by(ProductKey = ProdID):
+                        row.Description = NewDesc
+                        update_session.commit()
+
+                if choiceOpt == '6': # Updating Price
+                    ProdID = Id(); newPrice = Price()
+                    for row in update_session.query(Product).filter_by(ProductKey = ProdID):
+                        row.Price = NewPrice
+                        update_session.commit()
+
+                if choiceOpt == '7': # Updating Quantity
+                    ProdID = Id(); NewQty = Quantity()
+                    for row in update_session.query(Product).filter_by(ProductKey = ProdID):
+                        row.Quantity = NewQty
+                        update_session.commit()
+
+                if choiceOpt == '8':# Deleting Customer
+                    ProdID = Id()
+                    for row in delete_session.query(Product).filter_by(ProductKey = ProdID):
+                        delete_session.delete(row)
+                        update_session.commit()
+
+                if choiceOpt == '9': # back to the main menu
+                    break
+
+
+
+
+
 #''' Order block to add, view, edit, and delete Order'''
         if choice == '4':
             for table in search_Order.query(Order):# Printing table
@@ -313,11 +385,40 @@ def main():
                         print (table)
 
                 if choiceOpt == '2': #Adding new order
-                    CustID = Id(); ProdID = Id(); ProdPrice = Price(); Qty = Quantity
-                    NewOrder = Order(CustomerNum = CustID, ProductKey = ProdID, Price = ProdPrice, Quantity = Qty, TotalPrice = (ProdPrice * Qty))
+                    CustID = int (input ("Enter the Customer number: "))
+                    ProdID = int(input("Enter the product key: "))
+                    Qty = int (input("Enter the Quantity to buy: "))
+
+                    for row in search_Product.query(Product).filter_by(ProductKey = ProdID):
+                        ProdPrice = row.Price
+                        NProdName = row.ProdName
+                        try: # Taking the product out of the stock
+                            if Qty <= row.Quantity:
+                                row.Quantity = row.Quantity - Qty
+
+                            # elif row.Quantity == 0:
+                            #     print ("The is not enough in store to be sold.")
+                            #     break
+                            #
+                            else:
+                                print ("Enter small Quantity")
+                                Qty = int (input("Enter the Quantity to buy: "))
+                        except ValueError:
+                            print("This is has to be an integer")
+
+                    NewOrder = Order( ProdName = NProdName, Price = ProdPrice, Quantity = Qty, TotalPrice = (ProdPrice * Qty), CustomerNum = CustID)
                     add_session.add(NewOrder)
                     add_session.commit()
                     print("New Order has been added")
+
+                    # Updating the Commission
+                    for row in search_Cust.query(Customer).filter_by(CustomerId = CustID):
+                        ConsId = row.ConsultantId
+                        row.Balance = row.Balance + (ProdPrice * Qty)
+                        search_Cust.commit()
+                    for row in search_Consl.query(Consultant).filter_by(ConsultantId = ConsId):
+                        row.Commission = row.Commission + (ProdPrice * Qty * row.Rate)
+                        search_Consl.commit()
 
                 if choiceOpt == '3':# view order info
                     OrderId = Id()
@@ -413,6 +514,9 @@ def OrderMenu():# Order Menu Option
                 6. to delete Order
                 7. Exit''')
 
+
+
+
 #'''  block Of user Entries'''
 def Name():
     Name = input("Enter the new Name: ")
@@ -445,7 +549,7 @@ def Price():
     Price = float (input("Enter price: "))
     return Price
 
-def Quatity():
+def Quantity():
     Quantity = int (input("Enter Quantity received/ bought: "))
     return Quantity
 
